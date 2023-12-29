@@ -141,7 +141,6 @@ class AddressBook(UserDict):
         with open(filename, 'wb') as file:
             pickle.dump(self.data, file)
 
-
     def load_from_file(self, filename):
         try:
             with open(filename, 'rb') as file:
@@ -149,7 +148,6 @@ class AddressBook(UserDict):
         except FileNotFoundError:
             # Якщо файл не існує, залишаємо адресну книгу пустою
             self.data = {}
-
 
     def search_contacts(self, query):
         results = []
@@ -163,27 +161,17 @@ class AddressBook(UserDict):
         return results
         
 # Створення нової адресної книги
-book = AddressBook()
+new_book = AddressBook()
 
-# Створення запису для John
-john_record = Record("John")
-john_record.add_phone("1234567890")
-john_record.add_phone("5555555555")
-
-# Додавання запису John до адресної книги
-book.add_record(john_record)
-
-# Створення та додавання нового запису для Jane
-jane_record = Record("Jane")
-jane_record.add_phone("9876543210")
-book.add_record(jane_record)
+# Завантаження адресної книги з диску
+new_book.load_from_file('address_book.pkl')
 
 # Виведення всіх записів у книзі
-for name, record in book.data.items():
+for name, record in new_book.data.items():
     print(record)
 
 # Знаходження та редагування телефону для John
-john = book.find("John")
+john = new_book.find("John")
 john.edit_phone("1234567890", "1112223333")
 
 print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
@@ -193,23 +181,12 @@ found_phone = john.find_phone("5555555555")
 print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
 
 # Видалення запису Jane
-book.delete("Jane")
+new_book.delete("Jane")
 
 john = Record("John", "2000-05-20")
 print(john.birthday.days_to_birthday())  # Виведення кількості днів до наступного дня народження
 
 # Перевірка пагінації
-for batch in book.iterator(batch_size=1):
+for batch in new_book.iterator(batch_size=1):
     for record in batch:
         print(record)
-
-# Збереження адресної книги на диск
-book.save_to_file('address_book.pkl')
-
-# Завантаження адресної книги з диску
-book.load_from_file('address_book.pkl')
-
-# Пошук контактів за ім'ям або номером телефону
-search_results = book.search_contacts('John')
-for result in search_results:
-    print(result)
