@@ -56,11 +56,13 @@ def main():
             record = Record(name, birthday)
             address_book.add_record(record)
             print(f"Record {name} added successfully.")
+
+
         elif command.lower() == "add_phone":
             name = args[0]
             phone = args[1]
-            record = address_book.find(name)
-            if record:
+            is_record = address_book.find(name)
+            if is_record:
                 result = record.add_phone(phone)
                 print(result)
             else:
@@ -68,16 +70,31 @@ def main():
         elif command.lower() == "remove_phone":
             name = args[0]
             phone = args[1]
-            record = address_book.find(name)
-            if record:
+            is_record = address_book.find(name)
+            if is_record:
                 result = record.remove_phone(phone)
+                print(result)
+            else:
+                print(f"Record {name} not found.")
+        elif command.lower() == "edit_phone":
+            if len(args) < 2:
+                print("Usage: edit_phone <name> <old_phone> <new_phone>")
+                continue
+
+            name = args[0]
+            old_phone = args[1]
+            new_phone = args[2]
+
+            is_record = address_book.find(name)
+            if is_record:
+                result = record.edit_phone(old_phone, new_phone)
                 print(result)
             else:
                 print(f"Record {name} not found.")
         elif command.lower() == "get_phones":
             name = args[0]
-            record = address_book.find(name)
-            if record:
+            is_record = address_book.find(name)
+            if is_record:
                 phones = record.get_phones()
                 if phones:
                     print(f"Phones for {name}: {', '.join(phones)}")
@@ -92,8 +109,8 @@ def main():
                     print(record)
         elif command.lower() == "find":
             name = args[0]
-            record = address_book.find(name)
-            if record:
+            is_record = address_book.find(name)
+            if is_record:
                 print(record)
             else:
                 print(f"Record {name} not found.")
@@ -115,8 +132,8 @@ def main():
                 print("No matching contacts found.")
         elif command.lower() == "days_to_birthday":
             name = args[0]
-            record = address_book.find(name)
-            if record and record.birthday:
+            is_record = address_book.find(name)
+            if is_record and is_record.birthday:
                 days_left = record.birthday.days_to_birthday()
                 if days_left is not None:
                     print(f"Days left to {name}'s birthday: {days_left}")
