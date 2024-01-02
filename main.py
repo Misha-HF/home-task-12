@@ -1,159 +1,232 @@
-# from classes import Record, AddressBook
+import re
+from classes import Record, AddressBook
 
-# def main():
-#     address_book = AddressBook()
-#     address_book.load_from_file('address_book.pkl')
+def args_parser_typed(*type_args):
+    def args_parser(func):
+        def wrapper(args):
+            function_args = args.split(" ")
 
-#     while True:
-#         user_input = str(input(">>> "))
+            if len(type_args) != len(function_args):
+                raise ValueError("Incorrect arguments amount")
 
-#         if user_input.lower() in ["good bye", "close", "exit", "quit"]:
-#             print("Good Bye!")
-#             break
+            for i in range(len(type_args)):
+                function_args[i] = type_args[i](function_args[i])
 
-#         command, *args = user_input.split()
+            try:
+                return func(*function_args)
 
-#         if command.lower() == "hello":
-#             print("How can I help you?")
+            except TypeError as err:
+                raise ValueError(f"Error: {err}")
+
+            except ValueError as err:
+                raise ValueError(f"Handler error: {err}")
+
+            except KeyError as err:
+                raise KeyError(f"Error: {err}")
+
+        return wrapper
+    return args_parser
+
+def validate_phone_number(contact_number):
+    if re.match(r'^\d{10}$', contact_number) is None:
+        raise ValueError("The contact number is not valid.")
+
+@args_parser_typed(str, str)
+def record_func(name, birthday=None):
+
+    global contact_name
+    contact_name = name
+
+    global contact_birthday
+    contact_birthday = birthday
+
+    # global birthday
+    # birthday = None
+
+    # if len(info_contact) > 1:
+    #     birthday = info_contact[1]
+    # elif len(info_contact) > 2:
+    #     raise ValueError("Incorrect arguments amount")
+    
+
+    existing_record = address_book.find(name)
+    if existing_record:
+        print(f"Record {name} already exists.")
+    else:
+        # Create a new record
+        global record_obj
+        record_obj = Record(contact_name, birthday)
+
+        # Ask for phone numbers
+        while True:
+            phone_input = input("Enter phone number (or type 'done' to finish): ")
+            if phone_input.lower() == 'done':
+                break
+            try:
+                record_obj.add_phone(phone_input)
+                print(f"Phone number {phone_input} added successfully.")
+            except ValueError as e:
+                print(f"Error: {e}")
+
+        # Add the new record to the address book
+        # address_book.add_record(record)
+        print(f"Record {name} added successfully.")
+
+
+@args_parser_typed(str)
+def add_phone_func(phone):
+    if record_obj:
+        result = record_obj.add_phone(phone)
+        print(result)
+    else:
+        print(f"Record not found.")
+
+@args_parser_typed(str)
+def remove_phone_func(phone):
+    if record_obj:
+        result = record_obj.remove_phone(phone)
+        print(result)
+    else:
+        print(f"Record {contact_name} not found.")
+
+@args_parser_typed(str, str)
+def edit_phone_func(old_phone, new_phone):
+    if record_obj:
+        result = record_obj.edit_phone(old_phone, new_phone)
+        print(result)
+    else:
+        print(f"Record {contact_name} not found.")
+
+
+@args_parser_typed()
+def get_phones_func():
+    if record_obj:
+        phones = record_obj.get_phones()
+        if phones:
+            print(f"Phones for {contact_name}: {', '.join(phones)}")
+        else:
+            print(f"No phones found for {contact_name}.")
+    else:
+        print(f"Record {contact_name} not found.")
+
+@args_parser_typed(str)
+def add_record_func(name):
+    address_book.add_record(record_obj)
+    print(f"Record added successfully.")
+
+@args_parser_typed(int)
+def iterator_func(size):
+    for batch in address_book.iterator(size):
+        for record in batch:
+            print(record)
+
+@args_parser_typed(str)
+def find_func(name):
+    is_record = address_book.find(name)
+    if is_record:
+        print(is_record)
+    else:
+        print(f"Record {name} not found.")
+
+
+@args_parser_typed(str)
+def delete_func(name):
+    result = address_book.delete(name)
+    print(result)
+
+@args_parser_typed(str)
+def save_to_file_func(filename):
+    address_book.save_to_file(filename)
+    print(f"Address book saved to file.")
+
+@args_parser_typed(str)
+def search_contacts_func(query):
+    results = address_book.search_contacts(query)
+    if results:
+        for result in results:
+            print(result)
+    else:
+        print("No matching contacts found.")
+
+@args_parser_typed(str)
+def days_to_birthday_func(name):
+    if record_obj and contact_birthday:
+        days_left = record_obj.birthday.days_to_birthday()
+        if days_left is not None:
+            print(f"Days left to {contact_name}'s birthday: {days_left}")
+        else:
+            print(f"No birthday information for {contact_name}")
+    else:
+        print(f"Record {contact_name} not found.")
+
+def hello_handler():
+    return "How can I help you?"
+
+
+def main():
+    global address_book
+
+    address_book = AddressBook()
+    address_book.load_from_file('address_book.pkl')
+
+    table = {
+        "record": record_func, #
+        "add_phone": add_phone_func,#
+        "hello": hello_handler,#
+        "remove": remove_phone_func,#
+        "edit": edit_phone_func,#
+        "get_phone": get_phones_func,#
+        "add_record": add_record_func,#
+        "iterator": iterator_func,#
+        "find": find_func,#
+        "delete": delete_func,#
+        "save": save_to_file_func,
+        "search": search_contacts_func,#
+        "days_to_birthday": days_to_birthday_func
+    }
+   
+
+    while True:
+        user_input = str(input(">>> "))
+
+        if user_input.lower() in ["good bye", "close", "exit", "quit"]:
+            print("Good Bye!")
+            break
+
+        first_space = user_input.find(" ")
+        handler_name = user_input[:first_space].lower()
+        args = user_input[first_space:].strip()       
+
+        if user_input.lower() == "hello":
+            handler_name = "hello"
         
-#         elif command.lower() == "record":
-#             if len(args) < 1:
-#                 print("Usage: create_record <name> [birthday]")
-#                 continue
+        # if handler_name == "record":
+        #     second_space = args.find(" ")
+        #     if second_space != -1:
+        #         # Якщо є другий пробіл, передайте аргументи у функцію
+        #         args = [args[:second_space], args[second_space+1:]]
+        #     else:
+        #         # Якщо другого пробілу немає, передайте лише перший аргумент
+        #         args = [args, None]
 
-#             name = args[0]
-#             birthday = None
-#             if len(args) > 1:
-#                 birthday = args[1]
+        if handler_name in table:
+            
+            try:
+             
+                if user_input.lower() == "hello":
+                    result = table[handler_name]()
 
-#             existing_record = address_book.find(name)
-#             if existing_record:
-#                 print(f"Record {name} already exists.")
-#             else:
-#                 # Create a new record
-#                 record_obj = Record(name, birthday)
+                else:             
+                    result = table[handler_name](args)
 
-#                 # Ask for phone numbers
-#                 while True:
-#                     phone_input = input("Enter phone number (or type 'done' to finish): ")
-#                     if phone_input.lower() == 'done':
-#                         break
-#                     try:
-#                         record_obj.add_phone(phone_input)
-#                         print(f"Phone number {phone_input} added successfully.")
-#                     except ValueError as e:
-#                         print(f"Error: {e}")
+                if result:
+                    print(result)
 
-#                 # Add the new record to the address book
-#                 # address_book.add_record(record)
-#                 print(f"Record {name} added successfully.")
+            except (ValueError, KeyError) as e:
+                print(f"{e}")
+        else:
+            print("No such command")
 
-#         elif command.lower() == "add_record":
-#             try:
-#                 address_book.add_record(record_obj)
-#                 print(f"Record added successfully.")
-#             except ValueError as e:
-#                 print(f"Error: {e}")
-
-#         elif command.lower() == "add_phone":
-#             add_phone = args[0]
-#             if record_obj:
-#                 result = record_obj.add_phone(add_phone)
-#                 print(result)
-#             else:
-#                 print(f"Record not found.")
-
-
-#         elif command.lower() == "remove_phone":
-#             remove_phone = args[0]
-#             if record_obj:
-#                 result = record_obj.remove_phone(remove_phone)
-#                 print(result)
-#             else:
-#                 print(f"Record {name} not found.")
-
-
-#         elif command.lower() == "edit_phone":
-#             if len(args) < 2:
-#                 print("Usage: edit_phone <name> <old_phone> <new_phone>")
-#                 continue
-
-#             old_phone = args[0]
-#             new_phone = args[1]
-
-#             if record_obj:
-#                 result = record_obj.edit_phone(old_phone, new_phone)
-#                 print(result)
-#             else:
-#                 print(f"Record {name} not found.")
-
-
-#         elif command.lower() == "get_phones":
-#             if record_obj:
-#                 phones = record_obj.get_phones()
-#                 if phones:
-#                     print(f"Phones for {name}: {', '.join(phones)}")
-#                 else:
-#                     print(f"No phones found for {name}.")
-#             else:
-#                 print(f"Record {name} not found.")
-
-
-#         elif command.lower() == "iterator":
-#             batch_size = int(args[0])
-#             for batch in address_book.iterator(batch_size):
-#                 for record in batch:
-#                     print(record)
-
-
-#         elif command.lower() == "find":
-#             name = args[0]
-#             is_record = address_book.find(name)
-#             if is_record:
-#                 print(is_record)
-#             else:
-#                 print(f"Record {name} not found.")
-
-
-#         elif command.lower() == "delete":
-#             name = args[0]
-#             result = address_book.delete(name)
-#             print(result)
-
-
-#         elif command.lower() == "save_to_file":
-#             filename = args[0]
-
-#             address_book.save_to_file(filename)
-
-#             print(f"Address book saved to {filename}.")
-
-
-#         elif command.lower() == "search_contacts":
-#             query = args[0]
-#             results = address_book.search_contacts(query)
-#             if results:
-#                 for result in results:
-#                     print(result)
-#             else:
-#                 print("No matching contacts found.")
-
-
-#         elif command.lower() == "days_to_birthday":
-#             if record_obj and birthday:
-#                 days_left = record_obj.birthday.days_to_birthday()
-#                 if days_left is not None:
-#                     print(f"Days left to {name}'s birthday: {days_left}")
-#                 else:
-#                     print(f"No birthday information for {name}.")
-#             else:
-#                 print(f"Record {name} not found.")
-
-#         elif command.lower() == "show_all":
-#             print(address_book.data)
-
-#         else:
-#             print("No such command.")
-
-# if __name__ == "__main__":
-#     main()
+        
+if __name__ == "__main__":
+    main()
