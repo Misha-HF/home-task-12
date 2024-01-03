@@ -31,22 +31,21 @@ def validate_phone_number(contact_number):
     if re.match(r'^\d{10}$', contact_number) is None:
         raise ValueError("The contact number is not valid.")
 
-@args_parser_typed(str, str)
-def record_func(name, birthday=None):
+@args_parser_typed(str)
+def record_func(name):
 
     global contact_name
     contact_name = name
 
+    global birthday
+    birthday = None
+
     global contact_birthday
-    contact_birthday = birthday
-
-    # global birthday
-    # birthday = None
-
-    # if len(info_contact) > 1:
-    #     birthday = info_contact[1]
-    # elif len(info_contact) > 2:
-    #     raise ValueError("Incorrect arguments amount")
+    birthday = None
+    if len(info_contact) > 1:
+        birthday = info_contact[1]
+    elif len(info_contact) > 2:
+        raise ValueError("Incorrect arguments amount")
     
 
     existing_record = address_book.find(name)
@@ -63,6 +62,7 @@ def record_func(name, birthday=None):
             if phone_input.lower() == 'done':
                 break
             try:
+                validate_phone_number(phone_input)
                 record_obj.add_phone(phone_input)
                 print(f"Phone number {phone_input} added successfully.")
             except ValueError as e:
@@ -76,6 +76,7 @@ def record_func(name, birthday=None):
 @args_parser_typed(str)
 def add_phone_func(phone):
     if record_obj:
+        validate_phone_number(phone)
         result = record_obj.add_phone(phone)
         print(result)
     else:
@@ -92,14 +93,15 @@ def remove_phone_func(phone):
 @args_parser_typed(str, str)
 def edit_phone_func(old_phone, new_phone):
     if record_obj:
+        validate_phone_number(new_phone)
         result = record_obj.edit_phone(old_phone, new_phone)
         print(result)
     else:
         print(f"Record {contact_name} not found.")
 
 
-@args_parser_typed()
-def get_phones_func():
+@args_parser_typed(str)
+def get_phones_func(str):
     if record_obj:
         phones = record_obj.get_phones()
         if phones:
@@ -162,6 +164,12 @@ def days_to_birthday_func(name):
 def hello_handler():
     return "How can I help you?"
 
+def show_all_func():
+    if address_book:
+        for record in address_book.data.values():
+            print(record)
+    else:
+        print("Address book is empty.")
 
 def main():
     global address_book
@@ -182,6 +190,7 @@ def main():
         "delete": delete_func,#
         "save": save_to_file_func,
         "search": search_contacts_func,#
+        "show all": show_all_func,
         "days_to_birthday": days_to_birthday_func
     }
    
@@ -200,20 +209,26 @@ def main():
         if user_input.lower() == "hello":
             handler_name = "hello"
         
-        # if handler_name == "record":
-        #     second_space = args.find(" ")
-        #     if second_space != -1:
-        #         # Якщо є другий пробіл, передайте аргументи у функцію
-        #         args = [args[:second_space], args[second_space+1:]]
-        #     else:
-        #         # Якщо другого пробілу немає, передайте лише перший аргумент
-        #         args = [args, None]
+        if user_input.lower() == "show all":
+            handler_name = "show all"
+
+        if handler_name == "record":
+            global info_contact
+            info_contact = args.split(" ")
+            second_space = args.find(" ")
+            if second_space != -1:
+                args = args[:second_space]
+            else:
+                pass
 
         if handler_name in table:
             
             try:
              
                 if user_input.lower() == "hello":
+                    result = table[handler_name]()
+
+                elif user_input.lower() == "show all":
                     result = table[handler_name]()
 
                 else:             
@@ -229,4 +244,23 @@ def main():
 
         
 if __name__ == "__main__":
+    print(
+        """Instruction for the bot. Comands:
+        hello - greeting. Using: hello
+        show all - show all contacts. Using: show all
+        
+        1. record - create new record. Using: record (contact name) (birthday) - not necessarily)
+        2. add_phone - add phone to the record. Using: add_phone (phone)
+        3. remove - remove phone. Using: remove (phone)
+        4. edit - edit phone. Using: edit (old phone) (new phone)
+        5. get_phone - show all contact numbers. Using: get_phone (contact name)
+        6. days_to_birthday - shows the days until the contact's birthday. Using: days_to_birthday (contact_name)
+        *Use the commands above before adding the entry to address book
+        7. add_record - add record to address book. Using: add_record (contact name)
+        8. iterator - returns a generator based on Address Book entries. Using: iterator (number)
+        9. find - find cotact on Adress Book. Using: find (contact name)
+        10. delete - delete contact on Adress Book. Using: delete (contact name)
+        11. save - save Address Book to file. Using: save (file name)
+        12. search - searching for a contact by number or name: Using: search (contact name or phone)"""
+    )
     main()
