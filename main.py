@@ -136,10 +136,10 @@ def delete_func(name):
     result = address_book.delete(name)
     print(result)
 
-@args_parser_typed(str)
-def save_to_file_func(filename):
-    address_book.save_to_file(filename)
-    print(f"Address book saved to file.")
+# @args_parser_typed(str)
+# def save_to_file_func(filename):
+#     address_book.save_to_file(filename)
+#     print(f"Address book saved to file.")
 
 @args_parser_typed(str)
 def search_contacts_func(query):
@@ -188,7 +188,7 @@ def main():
         "iterator": iterator_func,#
         "find": find_func,#
         "delete": delete_func,#
-        "save": save_to_file_func,
+        # "save": save_to_file_func,
         "search": search_contacts_func,#
         "show all": show_all_func,
         "days_to_birthday": days_to_birthday_func
@@ -199,6 +199,7 @@ def main():
         user_input = str(input(">>> "))
 
         if user_input.lower() in ["good bye", "close", "exit", "quit"]:
+            address_book.save_to_file('address_book.pkl')
             print("Good Bye!")
             break
 
@@ -260,7 +261,6 @@ if __name__ == "__main__":
         8. iterator - returns a generator based on Address Book entries. Using: iterator (number)
         9. find - find cotact on Adress Book. Using: find (contact name)
         10. delete - delete contact on Adress Book. Using: delete (contact name)
-        11. save - save Address Book to file. Using: save (file name)
-        12. search - searching for a contact by number or name: Using: search (contact name or phone)"""
+        11. search - searching for a contact by number or name: Using: search (contact name or phone)"""
     )
     main()
