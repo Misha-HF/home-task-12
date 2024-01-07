@@ -34,9 +34,6 @@ def validate_phone_number(contact_number):
 @args_parser_typed(str)
 def record_func(name):
 
-    global contact_name
-    contact_name = name
-
     global birthday
     birthday = None
     
@@ -52,7 +49,7 @@ def record_func(name):
     else:
         # Create a new record
         global record_obj
-        record_obj = Record(contact_name, birthday)
+        record_obj = Record(name, birthday)
 
         # Ask for phone numbers
         while True:
@@ -66,8 +63,6 @@ def record_func(name):
             except ValueError as e:
                 print(f"Error: {e}")
 
-        # Add the new record to the address book
-        # address_book.add_record(record)
         print(f"Record {name} added successfully.")
 
 
@@ -201,6 +196,27 @@ def show_all_func():
     else:
         print("Address book is empty.")
 
+
+def help_func():
+    return """Instruction for the bot. Comands:
+        1. hello - greeting. Using: hello
+        2. show all - show all contacts. Using: show all
+        3. record - create new record. Using: record (contact name) (birthday) - not necessarily)
+        4. add_phone - add phone to the record. Using: add_phone (name) (phone)
+        5. remove - remove phone. Using: remove (name) (phone)
+        6. edit - edit phone. Using: edit (name) (old phone) (new phone)
+        7. get_phone - show all contact numbers. Using: get_phone (contact name)
+        8. days_to_birthday - shows the days until the contact's birthday. Using: days_to_birthday (contact_name)
+        9. add_record - add record to address book. Using: add_record (contact name)
+        10. iterator - returns a generator based on Address Book entries. Using: iterator (number)
+        11. find - find cotact on Adress Book. Using: find (contact name)
+        12. delete - delete contact on Adress Book. Using: delete (contact name)
+        13. search - searching for a contact by number or name: Using: search (contact name or phone)
+
+        To finish, enter good bye, close, exit or quit
+        *Bot has auto-save address book"""
+
+
 def main():
     global address_book
 
@@ -221,6 +237,7 @@ def main():
         # "save": save_to_file_func,
         "search": search_contacts_func,#
         "show all": show_all_func,
+        "help": help_func,
         "days_to_birthday": days_to_birthday_func
     }
    
@@ -243,6 +260,9 @@ def main():
         if user_input.lower() == "show all":
             handler_name = "show all"
 
+        if user_input.lower() == "help":
+            handler_name = "help"
+
         if handler_name == "record":
             global info_contact
             info_contact = args.split(" ")
@@ -261,6 +281,9 @@ def main():
 
                 elif user_input.lower() == "show all":
                     result = table[handler_name]()
+                
+                elif user_input.lower() == "help":
+                    result = table[handler_name]()
 
                 else:             
                     result = table[handler_name](args)
@@ -275,21 +298,5 @@ def main():
 
         
 if __name__ == "__main__":
-    print(
-        """Instruction for the bot. Comands:
-        hello - greeting. Using: hello
-        show all - show all contacts. Using: show all
-        
-        1. record - create new record. Using: record (contact name) (birthday) - not necessarily)
-        2. add_phone - add phone to the record. Using: add_phone (name) (phone)
-        3. remove - remove phone. Using: remove (name) (phone)
-        4. edit - edit phone. Using: edit (name) (old phone) (new phone)
-        5. get_phone - show all contact numbers. Using: get_phone (contact name)
-        6. days_to_birthday - shows the days until the contact's birthday. Using: days_to_birthday (contact_name)
-        7. add_record - add record to address book. Using: add_record (contact name)
-        8. iterator - returns a generator based on Address Book entries. Using: iterator (number)
-        9. find - find cotact on Adress Book. Using: find (contact name)
-        10. delete - delete contact on Adress Book. Using: delete (contact name)
-        11. search - searching for a contact by number or name: Using: search (contact name or phone)"""
-    )
+    print('Type "help" for bot instructions')
     main()

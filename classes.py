@@ -152,7 +152,6 @@ class AddressBook(UserDict):
     def search_contacts(self, query):
         results = []
         for record in self.data.values():
-            print(record)
             if query.lower() in record.name.value.lower():
                 results.append(record)
             for phone_obj in record.phones:
